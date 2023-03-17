@@ -1,0 +1,145 @@
+#need a class
+class Game
+  @@turnCount = 1
+  @@winner = ''
+
+  #this extablishes Player 1 and Player 2(human v human)
+  def initialize
+    @playerOne = "Player 1"
+    @playerTwo = "Player 2"
+    @board = Array.new(3) { Array.new(3, '_') }
+  end
+
+  # blank board showing in beginning
+  def displayBoard(board)
+    puts "#{board[0][0]} | #{board[0][1]} | #{board[0][2]}"
+    puts "#{board[1][0]} | #{board[1][1]} | #{board[1][2]}"
+    puts "#{board[2][0]} | #{board[2][1]} | #{board[2][2]}"
+  end
+
+  #function for which player is playing
+  def playerTurn(turn)
+    if turn.odd?
+      playerChoice(@playerOne, 'O')
+    else
+      playerChoice(@playerTwo, 'X')
+    end
+  end
+
+  #this function states which player is playing
+  def playerChoice(player, symbol)
+    puts "\r\n"
+    puts "#{player} please enter your coordinates (0..2) separated by a space"
+    input = gets.chomp
+    inputArray = input.split
+    coordOne = inputArray[0].to_i
+    coordTwo = inputArray[1].to_i
+
+    #in case the player writes the wrong coordinate
+    until input.match(/\s/) && coordOne.between?(0, 2) && coordTwo.between?(0, 2) && @board[coordOne][coordTwo] == '_'
+      puts 'Please enter valid coordinates for an empty space in the grid'
+      input = gets.chomp
+      inputArray = input.split
+      coordOne = inputArray[0].to_i
+      coordTwo = inputArray[1].to_i
+    end
+
+    addToBoard(coordOne, coordTwo, symbol)
+  end
+
+
+  def addToBoard(coordOne, coordTwo, symbol)
+    @board[coordOne][coordTwo] = symbol
+    @@turnCount += 1
+  end
+
+  # check 3 across
+  def threeAcross  
+    @board.each do |i|
+      if i.all? { |j| j == 'X' }
+        @@winner = 'X'
+        @@turnCount = 10
+      elsif i.all? { |j| j == 'O' }
+        @@winner = 'O'
+        @@turnCount = 10
+      else
+        nil
+      end
+    end
+  end
+
+  # check 3 down
+  def threeDown
+    flat = @board.flatten
+    flat.each_with_index do |v, i|
+      if v == 'X' && flat[i + 3] == 'X' && flat[i + 6] == 'X'
+        @@winner = 'X'
+        @@turnCount = 10
+      elsif v == 'O' && flat[i + 3] == 'O' && flat[i + 6] == 'O'
+        @@winner = 'O'
+        @@turnCount = 10
+      else
+        nil
+      end
+    end
+  end
+
+  # check diagonal
+  def threeDiagonal
+    centerVal = @board[1][1]
+    if centerVal == 'X' || centerVal == 'O'
+      if @board[0][0] && @board[2][2] == centerVal
+        @@winner = centerVal
+        @@turnCount = 10
+      elsif @board[2][0] && @board[0][2] == centerVal
+        @@winner = centerVal
+        @@turnCount = 10
+      end
+    else
+      nil
+    end
+  end
+
+  #or which player if goinjg to win
+  def declareResult(symbol)
+    case symbol
+    when 'O'
+      puts "#{@playerOne} wins the game!"
+    when 'X'
+      puts "#{@playerTwo} wins the game!"
+    else
+      puts "It's a tie!"
+    end
+  end
+
+  def playGame
+    puts "\r\n"
+    puts 'Here is your empty tic-tac-toe game!'
+    puts "\r\n"
+    displayBoard(@board)
+    puts "\r\n"
+
+    until @@turnCount >= 10 do
+      playerTurn(@@turnCount)
+      threeAcross
+      threeDown
+        threeDiagonal
+      displayBoard(@board)
+    end
+
+    declareResult(@@winner)
+  end
+
+end
+
+# instructions
+puts 'Tic-tac-toe: Each turn, enter two numbers with a space, per the grid layout below:'
+puts "\r\n"
+puts '0 0 | 0 1 | 0 2'
+puts '1 0 | 1 1 | 1 2'
+puts '2 0 | 2 1 | 2 2'
+puts "\r\n"
+
+# instantiate Game
+game = Game.new
+game.playGame
